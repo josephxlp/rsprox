@@ -1,6 +1,7 @@
 
 from os.path import join,exists, basename,isfile
 from os import system
+import glob
 import numpy as np 
 from concurrent.futures import ProcessPoolExecutor
 import yaml
@@ -18,6 +19,38 @@ def filter_x_notin_list(mylist, x):
 
 def get_x_from_list(mylist, x):
     return [i for i in mylist if x in i][0]
+
+def get_tilename_from_tdem_basename(fpath):
+    return basename(fpath).split('_')[4]
+
+
+def get_tilename_from_edem_basename(fpath):
+    return basename(fpath).split('_')[3]
+
+
+def get_tilename_from_edembasename_gpkg(gpkg_path):
+    return basename(gpkg_path).split('_')[3]
+
+
+def get_files_recursively(dir):
+    # imporove on this upto level 5 if 
+    fs = glob.glob(f'{dir}/*/*/*.tif', recursive=True)
+    if len(fs) == 0:
+        fs = glob.glob(f'{dir}/*/*.tif', recursive=True)
+    return fs
+
+def get_edem_var_files(dir):
+    edem_fpaths = get_files_recursively(dir)
+    edem_fpaths = filter_x_notin_list(edem_fpaths, 'PREVIEW')
+    
+    edem_egm = get_x_from_list(edem_fpaths, 'EGM')
+    edem_w84 = get_x_from_list(edem_fpaths, 'W84')
+    edem_edm = get_x_from_list(edem_fpaths, 'EDM')
+    edem_hem = get_x_from_list(edem_fpaths, 'HEM')
+    edem_lcm = get_x_from_list(edem_fpaths, 'LCM')
+    edem_hsd = get_x_from_list(edem_fpaths, 'HSD')
+    return edem_egm, edem_w84, edem_edm, edem_hem, edem_lcm, edem_hsd
+
 
 
 def gen_vrt_params(dir_VRTs, varnames, dname, allfiles):
