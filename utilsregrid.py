@@ -14,6 +14,34 @@ gtif_drv = gdal.GetDriverByName('GTiff')
 vrt_drv = gdal.GetDriverByName("VRT")
 # do this differently for efficiently 
 
+
+from sklearn.preprocessing import MinMaxScaler
+
+def scale_tif(fpath):
+    output_fpath = fpath.replace('.tif', '__scaled.tif')
+    if not os.path.isfile(output_fpath):
+        scaler = MinMaxScaler()
+        with rasterio.open(fpath) as src:
+            data = src.read()
+            meta = src.meta
+        
+        num_bands = data.shape[0]
+        scaled_data = np.zeros_like(data, dtype=np.float32)
+        for i in range(num_bands):
+            band = data[i].reshape(-1, 1)  # Reshape for MinMaxScaler
+            scaled_band = scaler.fit_transform(band).reshape(data[i].shape)
+            scaled_data[i] = scaled_band
+
+
+        meta.update(dtype='float32')
+        with rasterio.open(output_fpath, 'w', **meta) as dst:
+            dst.write(scaled_data)
+
+        print(f"Scaled TIFF saved as {output_fpath}")
+    else:
+        print(f"Scaled TIFF saved at {output_fpath}")
+    return output_fpath
+
 def classify_lwm_TanDEMX_LCM(lcm_fn,lwm_a_fn,lwm_b_fn):
     with rasterio.open(lcm_fn) as src:
         b1 = src.read(1)
@@ -423,11 +451,12 @@ def regrid_datasets(
     s1_tile = format_tile_fpath(tilename_dpath, tilename, s1_fpath)
     gdal_regrid(s1_fpath, s1_tile, xmin, ymin, xmax, ymax, xres, yres, mode='num')
     ds['s1'] = s1_tile
+    
 
     s2_tile = format_tile_fpath(tilename_dpath, tilename, s2_fpath)
     gdal_regrid(s2_fpath, s2_tile, xmin, ymin, xmax, ymax, xres, yres, mode='num')
     ds['s2'] = s2_tile
-
+    
     # clipping 
     tdem_dem_tile = format_tile_fpath(tilename_dpath, tilename, tdem_dem_fpath)
     gdal_regrid(tdem_dem_fpath, tdem_dem_tile, xmin, ymin, xmax, ymax, xres, yres, mode='num')
@@ -545,12 +574,7 @@ def regrid_datasets(
 
     edem_demw84_tile = format_tile_fpath(tilename_dpath, tilename, edem_edem_W84_fpath)
     gdal_regrid(edem_edem_W84_fpath, edem_demw84_tile, xmin, ymin, xmax, ymax, xres, yres, mode='num')
-    ds['edem_demw84'] = edem_demw84_tile
-
-
-    
-
-    
+    ds['edem_demw84'] = edem_demw84_tile 
 
     # wsfba_tile = format_tile_fpath(tilename_dpath, tilename, wsfba_fpath)
     # gdal_regrid(wsfba_fpath, wsfba_tile, xmin, ymin, xmax, ymax, xres, yres, mode='num')
@@ -571,10 +595,25 @@ def regrid_datasets(
     egm08_tile = format_tile_fpath(tilename_dpath, tilename, egm08_fpath)
     gdal_regrid(egm08_fpath, egm08_tile, xmin, ymin, xmax, ymax, xres, yres, mode='num')
     ds['egm08'] = egm08_tile
+   
 
     egm96_tile = format_tile_fpath(tilename_dpath, tilename, egm96_fpath)
     gdal_regrid(egm96_fpath, egm96_tile, xmin, ymin, xmax, ymax, xres, yres, mode='num')
     ds['egm96'] = egm96_tile
+
+
+
+    s2_tilex = scale_tif(s2_tile)
+    ds['s2x'] = s2_tilex
+
+    s1_tilex = scale_tif(s1_tile)
+    ds['s1x'] = s1_tilex
+
+    egm96_tilex = scale_tif(egm96_tile)
+    ds['egm96x'] = egm96_tilex
+
+    egm08_tilex = scale_tif(egm08_tile)
+    ds['egm08x'] = egm08_tilex
 
     #tdem_dem_clean_tile = tdem_dem_tile.replace('.tif', '_clean.tif')
     #tdem_erode_tile = tdem_dem_tile.replace('.tif', '_E.tif')
