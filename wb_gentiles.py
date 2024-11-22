@@ -89,7 +89,7 @@ if __name__ == '__main__':
     print(f'run.time: {tf/60} min(s)')
     #print(dicname)
     #pprint(basefiles)
-    # 18 MINUTES ALL TILES 
+    # 18 MINUTES ALL TILES + 5m for scaling [not worth it]?
 
 
 

@@ -45,3 +45,4 @@ if __name__ == '__main__':
     print(f'RUN.TIME {tf/60} mins')
 
 
+# add count of nulls by tdem, pdem,ldem 
