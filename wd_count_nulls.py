@@ -8,11 +8,6 @@ from upaths import PATCHE256_DPATH,CONFIG_PATCHE256_DPATH,columns_to_check
 from concurrent.futures import ProcessPoolExecutor
 
 
-import os
-import pandas as pd
-import rasterio
-from concurrent.futures import ProcessPoolExecutor
-
 # Assuming these are defined elsewhere in your code
 # from upaths import tilenames_full, PATCHE256_DPATH, CONFIG_PATCHE256_DPATH, columns_to_check
 
@@ -88,18 +83,26 @@ def count_nulls_by_variablelist(directory_path, columns_to_check, csvpath):
 
 
 from utilstimer import Timer 
+from upaths import CONFIG_PATH_DPATH
+from upaths import tilenames_all
 
 # Example usage:
-timer = Timer()
 
+ps = int(256 * 4)
+
+timer = Timer()
+CONFIG_PATCHE_X_DPATH = os.path.join(CONFIG_PATH_DPATH, f'PATCHES{ps}')
+os.makedirs(CONFIG_PATCHE_X_DPATH,exist_ok=True)
+
+tilenames = tilenames_all
 
 if __name__ == '__main__':
     timer.time_start()
     with ProcessPoolExecutor() as PEX:
-        for tilename in tilenames_full:
+        for tilename in tilenames:
             directory_path = os.path.join(PATCHE256_DPATH, tilename)
             print(f"Processing directory: {directory_path}")
-            csvpath = os.path.join(CONFIG_PATCHE256_DPATH, f'{tilename}_patches_count_null.csv')
+            csvpath = os.path.join(CONFIG_PATCHE_X_DPATH, f'{tilename}_patches_count_null.csv')
 
             PEX.submit(count_nulls_by_variablelist, directory_path, columns_to_check, csvpath)
     timer.time_end()

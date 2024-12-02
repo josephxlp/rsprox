@@ -33,8 +33,10 @@ if __name__ == '__main__':
     elif dicname == 'edem_dict':
         basefiles = bpaths['edem_dict']['EGM']['files'] 
 
-    print(dicname)
+    #print(dicname)
+    print(f'basefiles {len(basefiles)}')
     pprint(basefiles)
+    print(f'basefiles {len(basefiles)}')
 
     tdem_dem_fpath = gpaths['tdem_DEM']
     tdem_hem_fpath = gpaths['tdem_HEM']
@@ -64,6 +66,7 @@ if __name__ == '__main__':
     pool = multiprocessing.Pool(processes=num_processes)
 
     for i, basefile in enumerate(basefiles):
+        print(f'{i}/{len(basefiles)} @{basefile}')
         pool.apply_async(
             rops.process_tile, (basefile, TILES12_DPATH, tdem_dem_fpath, tdem_hem_fpath, 
                             tdem_wam_fpath, tdem_com_fpath, cdem_wbm_fpath, esawc_fpath, 
@@ -75,7 +78,8 @@ if __name__ == '__main__':
     pool.join()
 
     # for i, basefile in enumerate(basefiles):
-    #     if i > 0 : break
+    #     #if i > 0 : break
+    #     print(f'{i}/{len(basefiles)} @{basefile}')
     #     rops.process_tile(
     #         basefile, TILES12_DPATH, tdem_dem_fpath, tdem_hem_fpath, 
     #                         tdem_wam_fpath, tdem_com_fpath, cdem_wbm_fpath, esawc_fpath, 

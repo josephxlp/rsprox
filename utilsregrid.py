@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 from scipy import ndimage
+from sklearn.preprocessing import MinMaxScaler
 
 import utilsvrt as uops 
 mem_drv = gdal.GetDriverByName('MEM')
@@ -15,7 +16,7 @@ vrt_drv = gdal.GetDriverByName("VRT")
 # do this differently for efficiently 
 
 
-from sklearn.preprocessing import MinMaxScaler
+
 
 def scale_tif(fpath):
     output_fpath = fpath.replace('.tif', '__scaled.tif')
@@ -575,6 +576,9 @@ def regrid_datasets(
     edem_demw84_tile = format_tile_fpath(tilename_dpath, tilename, edem_edem_W84_fpath)
     gdal_regrid(edem_edem_W84_fpath, edem_demw84_tile, xmin, ymin, xmax, ymax, xres, yres, mode='num')
     ds['edem_demw84'] = edem_demw84_tile 
+
+    #cdem_demw84_tile
+    #ds['cdem_demw84'] = cdem_dem_tile
 
     # wsfba_tile = format_tile_fpath(tilename_dpath, tilename, wsfba_fpath)
     # gdal_regrid(wsfba_fpath, wsfba_tile, xmin, ymin, xmax, ymax, xres, yres, mode='num')

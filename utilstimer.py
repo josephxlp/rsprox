@@ -120,15 +120,6 @@ class Timer:
 
 # after email open notification on the desktop
 
-
-
-
-# Example usage:
-# timer = Timer(description="Sample timing session")
-# timer.time_start()
-# time.sleep(2)  # Simulating a code block with a 2-second sleep
-# timer.time_end()
-
 # improve this function 
 # well documented output, acccept a text also 
 # send an email notification 

@@ -1,5 +1,5 @@
 
-from upaths import tilenames_full,TILES12_DPATH
+from upaths import tilenames_full,TILES12_DPATH,tilenames_all
 from utilspatches import (load_patch_params,load_variables,
                           filter_by_tilename,generate_tiles)
 import os 
@@ -11,9 +11,10 @@ names_at_patching_V1 = ['edem_demw84','ldtm','pdem','tdem_dem',
                        'tdem_dem_fw','tdem_dem_mw']
 vrtvars = names_at_patching_V1
 i_wdir = TILES12_DPATH
-ps = 256
+ps = int(256 * 4) #1,4
 
-tilenames = tilenames_full
+tilenames = tilenames_all#tilenames_full
+print(tilenames)
 dlist = []
 for i in range(len(tilenames)):
     #if i > 0: break
@@ -27,7 +28,7 @@ dd = pd.DataFrame(dlist)
 if __name__ == '__main__':
     ti = time.perf_counter()
 
-    for tname in tilenames_full:
+    for tname in tilenames:
 
         ftile,fnames,fpaths, fwdir = filter_by_tilename(dd, tname=tname)
         print(ftile, tname)
