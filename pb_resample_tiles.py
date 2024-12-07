@@ -10,6 +10,7 @@ from concurrent.futures import ProcessPoolExecutor
 import rasterio
 from rasterio.enums import Resampling
 
+
 def list_base_files(base_dpath, varname):
     bpattern = f"{base_dpath}/*/{varname}/*tif"
     bfiles = glob(bpattern)
@@ -17,26 +18,49 @@ def list_base_files(base_dpath, varname):
     return bfiles
 
 def resample_raster(fipath, bipath, fopath, algo=Resampling.nearest):
+    """
+    Resamples a raster file (including multi-band data) to match the resolution and CRS of a base raster.
 
+    Parameters:
+    - fipath: str, input raster file path.
+    - bipath: str, base raster file path.
+    - fopath: str, output raster file path.
+    - algo: Resampling, resampling algorithm (default: Resampling.nearest).
+    """
     if not os.path.isfile(fopath):
         with rasterio.open(fipath) as src, rasterio.open(bipath) as ref:
-            input_data = src.read(1)
-            transform = ref.transform
-            width = ref.width
-            height = ref.height
-
-            crs = src.crs
+            # Get properties from the input raster
+            num_bands = src.count  # Number of bands
             dtype = src.dtypes[0]
+            crs = ref.crs  # Reference CRS for alignment
+            transform = ref.transform
+            width, height = ref.width, ref.height
 
-            resampled_data = src.read(1,out_shape=(height, width),resampling=algo)
-            # change this to match data type 
+            # Resample all bands
+            resampled_data = src.read(
+                out_shape=(num_bands, height, width),
+                resampling=algo
+            )
 
-            # Create a new raster to write the resampled data with the properties from the input and reference
-            with rasterio.open(fopath,'w',driver='GTiff',count=1,dtype=dtype,
-                crs=crs,transform=transform,width=width,height=height) as dst:
-                dst.write(resampled_data, 1)
+            # Create output raster
+            with rasterio.open(
+                fopath,
+                'w',
+                driver='GTiff',
+                count=num_bands,
+                dtype=dtype,
+                crs=crs,
+                transform=transform,
+                width=width,
+                height=height
+            ) as dst:
+                for band in range(1, num_bands + 1):  # Raster bands are 1-based in rasterio
+                    dst.write(resampled_data[band - 1], band)
+
+            print(f"Resampled raster saved to {fopath}")
     else:
-        print('already created')
+        print(f"{fopath} already exists. Skipping.")
+
 
 
 def filter_files_by_endingwith(files, var_ending):
@@ -48,7 +72,7 @@ def process_basefile(basefile,D12PATH,DXPATH, RESAMPLE_VAR_ENGING, RESAMPLE_VAR_
     tilename = basefile.split('/')[-3]
     print(tilename)
     t12path = os.path.join(D12PATH, tilename)
-    tXdpath = os.path.join(DXPATH, tilename)
+    tXdpath = os.path.join(DXPATH, 'RESAMPLE',tilename)
     os.makedirs(tXdpath, exist_ok=True)
     t12files = glob(f'{t12path}/*.tif')
     t12files = filter_files_by_endingwith(t12files, RESAMPLE_VAR_ENGING)
